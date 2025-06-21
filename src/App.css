@@ -338,7 +338,39 @@ body {
   color: #6c757d;
 }
 
-/* Desktop delete button */
+/* Desktop controls */
+.desktop-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.task-item:hover .desktop-controls {
+  opacity: 1;
+}
+
+.priority-select-desktop {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.priority-select-desktop:hover {
+  border-color: #667eea;
+}
+
+.priority-select-desktop:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25);
+}
+
 .delete-button-desktop {
   background: none;
   border: none;
@@ -347,21 +379,15 @@ body {
   border-radius: 4px;
   transition: background-color 0.2s;
   font-size: 1.2rem;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.task-item:hover .delete-button-desktop {
-  opacity: 1;
 }
 
 .delete-button-desktop:hover {
   background: #f8d7da;
 }
 
-/* Hide delete button on mobile */
+/* Hide desktop controls on mobile */
 @media (max-width: 768px) {
-  .delete-button-desktop {
+  .desktop-controls {
     display: none;
   }
 }

@@ -99,18 +99,38 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           </span>
         </div>
 
-        {/* Desktop delete button */}
-        <button
-          className="delete-button-desktop"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(task.id);
-          }}
-          aria-label={`Delete "${task.title}"`}
-          title="Delete task"
-        >
-          🗑️
-        </button>
+        {/* Desktop controls */}
+        <div className="desktop-controls">
+          <select
+            className="priority-select-desktop"
+            value={task.priority}
+            onChange={(e) => {
+              e.stopPropagation();
+              onPriorityChange(task.id, parseInt(e.target.value) as Priority);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Change priority for "${task.title}"`}
+            title="Change priority"
+          >
+            {([3, 2, 1, 0] as Priority[]).map((priority) => (
+              <option key={priority} value={priority}>
+                {PRIORITY_LABELS[priority] ? `${PRIORITY_LABELS[priority]} - ` : ''}{priority === 3 ? 'Do First' : priority === 2 ? 'Schedule' : priority === 1 ? 'Nice to Have' : 'Backlog'}
+              </option>
+            ))}
+          </select>
+          
+          <button
+            className="delete-button-desktop"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(task.id);
+            }}
+            aria-label={`Delete "${task.title}"`}
+            title="Delete task"
+          >
+            🗑️
+          </button>
+        </div>
       </div>
 
       <div className="task-meta">
