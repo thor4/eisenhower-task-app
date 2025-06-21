@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { useSwipeable } from 'react-swipeable';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Task, PRIORITY_LABELS, Priority } from '@/types';
 
 interface TaskItemProps {
@@ -16,104 +18,71 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   onPriorityChange,
   className = '',
 }) => {
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
-  const [swipeState, setSwipeState] = useState<'none' | 'delete' | 'priority-up' | 'priority-down'>('none');
-  const taskRef = useRef<HTMLDivElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [swipeState, setSwipeState] = useState<'none' | 'swiping'>('none');
 
   const priorityClass = `priority-${task.priority}`;
   const completedClass = task.completed ? 'completed' : '';
-  const minSwipeDistance = 50;
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
-    setTouchEnd(null);
-    setSwipeState('none');
+  // Simple click handler for desktop and mobile
+  const handleTaskClick = (e: React.MouseEvent) => {
     e.preventDefault();
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return;
-
-    const touch = e.touches[0];
-    setTouchEnd({ x: touch.clientX, y: touch.clientY });
-
-    const deltaX = touch.clientX - touchStart.x;
-    const deltaY = touch.clientY - touchStart.y;
-
-    // Determine swipe direction
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe - delete
-      if (Math.abs(deltaX) > minSwipeDistance) {
-        setSwipeState('delete');
-      }
-    } else {
-      // Vertical swipe - priority change
-      if (Math.abs(deltaY) > minSwipeDistance) {
-        setSwipeState(deltaY < 0 ? 'priority-up' : 'priority-down');
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) {
-      // Simple tap - toggle completion
-      onToggle(task.id);
-      return;
-    }
-
-    const deltaX = touchEnd.x - touchStart.x;
-    const deltaY = touchEnd.y - touchStart.y;
-
-    // Handle swipe actions
-    if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe - delete
-      if (navigator.vibrate) navigator.vibrate(100);
-      onDelete(task.id);
-    } else if (Math.abs(deltaY) > minSwipeDistance && Math.abs(deltaY) > Math.abs(deltaX)) {
-      // Vertical swipe - change priority
-      if (navigator.vibrate) navigator.vibrate(50);
-      
-      if (deltaY < 0) {
-        // Swipe up - increase priority
-        const newPriority = Math.min(3, task.priority + 1) as Priority;
-        if (newPriority !== task.priority) {
-          onPriorityChange(task.id, newPriority);
-        }
-      } else {
-        // Swipe down - decrease priority
-        const newPriority = Math.max(0, task.priority - 1) as Priority;
-        if (newPriority !== task.priority) {
-          onPriorityChange(task.id, newPriority);
-        }
-      }
-    } else {
-      // Small movement or tap - toggle completion
-      onToggle(task.id);
-    }
-
-    setTouchStart(null);
-    setTouchEnd(null);
-    setSwipeState('none');
-  };
-
-  const handleClick = () => {
-    // For non-touch devices (desktop)
+    e.stopPropagation();
     onToggle(task.id);
   };
 
+  // Swipe handlers using react-swipeable
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (navigator.vibrate) navigator.vibrate(100);
+      setShowDeleteConfirm(true);
+      setTimeout(() => setShowDeleteConfirm(false), 3000); // Auto-hide after 3s
+    },
+    onSwipedRight: () => {
+      if (navigator.vibrate) navigator.vibrate(100);
+      setShowDeleteConfirm(true);
+      setTimeout(() => setShowDeleteConfirm(false), 3000);
+    },
+    onSwipedUp: () => {
+      if (navigator.vibrate) navigator.vibrate(50);
+      const newPriority = Math.min(3, task.priority + 1) as Priority;
+      if (newPriority !== task.priority) {
+        onPriorityChange(task.id, newPriority);
+      }
+    },
+    onSwipedDown: () => {
+      if (navigator.vibrate) navigator.vibrate(50);
+      const newPriority = Math.max(0, task.priority - 1) as Priority;
+      if (newPriority !== task.priority) {
+        onPriorityChange(task.id, newPriority);
+      }
+    },
+    onSwiping: () => setSwipeState('swiping'),
+    onSwiped: () => setSwipeState('none'),
+    trackMouse: false, // Only track touch, not mouse
+    preventScrollOnSwipe: true, // Prevent page scroll during swipe
+    delta: 10, // Minimum distance before registering swipe
+  });
+
+  const handleDeleteConfirm = () => {
+    onDelete(task.id);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+  };
+
   return (
-    <div
-      ref={taskRef}
-      className={`task-item ${priorityClass} ${completedClass} ${className} ${swipeState !== 'none' ? `swipe-${swipeState}` : ''}`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onClick={handleClick}
+    <motion.div
+      {...swipeHandlers}
+      className={`task-item ${priorityClass} ${completedClass} ${className} ${swipeState === 'swiping' ? 'swiping' : ''}`}
+      onClick={handleTaskClick}
       role="button"
       tabIndex={0}
-      aria-label={`Task: ${task.title}. Priority ${task.priority}. ${task.completed ? 'Completed' : 'Active'}. Tap to toggle, swipe right to delete, swipe up/down to change priority.`}
+      aria-label={`Task: ${task.title}. Priority ${task.priority}. ${task.completed ? 'Completed' : 'Active'}. Click to toggle completion.`}
+      whileTap={{ scale: 0.98 }}
+      layout
     >
       <div className="task-content">
         <span className="priority-indicator" title={`Priority ${task.priority}`}>
@@ -129,6 +98,19 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             {task.title}
           </span>
         </div>
+
+        {/* Desktop delete button */}
+        <button
+          className="delete-button-desktop"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id);
+          }}
+          aria-label={`Delete "${task.title}"`}
+          title="Delete task"
+        >
+          🗑️
+        </button>
       </div>
 
       <div className="task-meta">
@@ -138,17 +120,37 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         </small>
       </div>
 
-      {/* Swipe hints */}
-      {swipeState === 'delete' && (
-        <div className="swipe-hint delete-hint">🗑️ Release to delete</div>
-      )}
-      {swipeState === 'priority-up' && (
-        <div className="swipe-hint priority-hint">↑ Release to increase priority</div>
-      )}
-      {swipeState === 'priority-down' && (
-        <div className="swipe-hint priority-hint">↓ Release to decrease priority</div>
-      )}
-    </div>
+      {/* Delete confirmation overlay */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="delete-confirm-overlay"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="delete-confirm-content">
+              <p>Delete this task?</p>
+              <div className="delete-confirm-buttons">
+                <button 
+                  className="delete-confirm-yes"
+                  onClick={handleDeleteConfirm}
+                >
+                  Yes
+                </button>
+                <button 
+                  className="delete-confirm-no"
+                  onClick={handleDeleteCancel}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 

@@ -81,7 +81,7 @@ const App: React.FC = () => {
           Priority levels: *** (Do First) | ** (Schedule) | * (Nice to Have) | Backlog
         </p>
         <p className="mobile-instructions">
-          📱 Tap to complete • Swipe → to delete • Swipe ↑↓ to change priority
+          📱 Tap to complete • Swipe ←→ for delete options • Swipe ↑↓ to change priority
         </p>
       </footer>
     </div>

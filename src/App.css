@@ -248,7 +248,6 @@ body {
   cursor: pointer;
   user-select: none;
   position: relative;
-  overflow: hidden;
   min-height: 80px;
   display: flex;
   flex-direction: column;
@@ -259,29 +258,12 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.task-item:active {
-  transform: scale(0.98);
-  background: #f8f9fa;
-}
-
 .task-item.completed {
   opacity: 0.7;
 }
 
-/* Swipe states */
-.task-item.swipe-delete {
-  background: #f8d7da;
-  border-left-color: #dc3545;
-}
-
-.task-item.swipe-priority-up {
-  background: #d1ecf1;
-  border-left-color: #17a2b8;
-}
-
-.task-item.swipe-priority-down {
-  background: #fff3cd;
-  border-left-color: #ffc107;
+.task-item.swiping {
+  background: #f8f9fa;
 }
 
 /* Priority colors */
@@ -356,34 +338,84 @@ body {
   color: #6c757d;
 }
 
-/* Swipe hints */
-.swipe-hint {
+/* Desktop delete button */
+.delete-button-desktop {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  font-size: 1.2rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.task-item:hover .delete-button-desktop {
+  opacity: 1;
+}
+
+.delete-button-desktop:hover {
+  background: #f8d7da;
+}
+
+/* Hide delete button on mobile */
+@media (max-width: 768px) {
+  .delete-button-desktop {
+    display: none;
+  }
+}
+
+/* Delete confirmation overlay */
+.delete-confirm-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: bold;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(220, 53, 69, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 10;
-  pointer-events: none;
-  animation: swipeHintPulse 0.5s ease-in-out;
+  border-radius: 8px;
 }
 
-@keyframes swipeHintPulse {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.delete-confirm-content {
+  text-align: center;
+  color: white;
 }
 
-.delete-hint {
-  background: rgba(220, 53, 69, 0.9);
+.delete-confirm-content p {
+  margin: 0 0 1rem 0;
+  font-weight: bold;
 }
 
-.priority-hint {
-  background: rgba(23, 162, 184, 0.9);
+.delete-confirm-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.delete-confirm-yes,
+.delete-confirm-no {
+  padding: 0.5rem 1rem;
+  border: 2px solid white;
+  border-radius: 4px;
+  background: transparent;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-confirm-yes:hover {
+  background: white;
+  color: #dc3545;
+}
+
+.delete-confirm-no:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .task-meta {
