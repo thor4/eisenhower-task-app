@@ -12,6 +12,7 @@ const App: React.FC = () => {
     addTask,
     toggleTask,
     deleteTask,
+    changePriority,
     setFilter,
     setSortBy,
     clearCompleted,
@@ -69,6 +70,7 @@ const App: React.FC = () => {
             tasks={filteredAndSortedTasks}
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
+            onPriorityChange={changePriority}
             emptyMessage={getEmptyMessage()}
           />
         </section>
@@ -76,7 +78,10 @@ const App: React.FC = () => {
 
       <footer className="app-footer">
         <p>
-          Priority levels: **** (Do First) | *** (Schedule) | ** (Delegate) | * (Don't Do)
+          Priority levels: *** (Do First) | ** (Schedule) | * (Nice to Have) | Backlog
+        </p>
+        <p className="mobile-instructions">
+          📱 Tap to complete • Swipe → to delete • Swipe ↑↓ to change priority
         </p>
       </footer>
     </div>

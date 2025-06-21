@@ -1,12 +1,12 @@
 import React from 'react';
-import { Task } from '@/types';
+import { Task, Priority } from '@/types';
 import { TaskItem } from '@/components/TaskItem';
 
 interface TaskListProps {
   tasks: Task[];
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
-  onEditTask?: (task: Task) => void;
+  onPriorityChange: (id: string, priority: Priority) => void;
   className?: string;
   emptyMessage?: string;
 }
@@ -15,7 +15,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   tasks,
   onToggleTask,
   onDeleteTask,
-  onEditTask,
+  onPriorityChange,
   className = '',
   emptyMessage = 'No tasks found.',
 }) => {
@@ -35,7 +35,7 @@ export const TaskList: React.FC<TaskListProps> = ({
           task={task}
           onToggle={onToggleTask}
           onDelete={onDeleteTask}
-          onEdit={onEditTask}
+          onPriorityChange={onPriorityChange}
           className="task-list-item"
         />
       ))}

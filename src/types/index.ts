@@ -1,4 +1,4 @@
-export type Priority = 1 | 2 | 3 | 4;
+export type Priority = 0 | 1 | 2 | 3;
 
 export interface Task {
   id: string;
@@ -38,15 +38,15 @@ export interface TaskContextType {
 }
 
 export const PRIORITY_LABELS: Record<Priority, string> = {
-  4: '****', // Urgent & Important (Do First)
-  3: '***',  // Important, Not Urgent (Schedule)  
-  2: '**',   // Urgent, Not Important (Delegate)
-  1: '*',    // Neither Urgent nor Important (Don't Do)
+  3: '***', // Urgent & Important (Do First)
+  2: '**',  // Important but not urgent (Schedule)  
+  1: '*',   // Nice to have
+  0: '',    // Backlog (no asterisk)
 };
 
 export const PRIORITY_DESCRIPTIONS: Record<Priority, string> = {
-  4: 'Urgent & Important (Do First)',
-  3: 'Important, Not Urgent (Schedule)',
-  2: 'Urgent, Not Important (Delegate)',
-  1: 'Neither Urgent nor Important (Don\'t Do)',
+  3: 'Urgent & Important (Do First)',
+  2: 'Important but not urgent (Schedule)',
+  1: 'Nice to have',
+  0: 'Backlog',
 };

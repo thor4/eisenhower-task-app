@@ -13,7 +13,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({
   className = '',
 }) => {
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState<Priority>(4); // Default to highest priority
+  const [priority, setPriority] = useState<Priority>(3); // Default to highest priority
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -27,7 +27,7 @@ export const AddTaskForm: React.FC<AddTaskFormProps> = ({
 
     onAddTask(title, priority);
     setTitle('');
-    setPriority(4);
+    setPriority(3);
     setError(null);
   };
 

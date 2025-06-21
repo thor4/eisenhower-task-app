@@ -60,8 +60,8 @@ export const validateTask = (title: string, priority: Priority): string | null =
   if (title.trim().length > 200) {
     return 'Task title must be 200 characters or less';
   }
-  if (![1, 2, 3, 4].includes(priority)) {
-    return 'Priority must be between 1 and 4';
+  if (![0, 1, 2, 3].includes(priority)) {
+    return 'Priority must be between 0 and 3';
   }
   return null;
 };

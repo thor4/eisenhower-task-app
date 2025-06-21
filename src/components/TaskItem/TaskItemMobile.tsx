@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Task, PRIORITY_LABELS, Priority } from '@/types';
 
-interface TaskItemProps {
+interface TaskItemMobileProps {
   task: Task;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
@@ -9,7 +9,7 @@ interface TaskItemProps {
   className?: string;
 }
 
-export const TaskItem: React.FC<TaskItemProps> = ({
+export const TaskItemMobile: React.FC<TaskItemMobileProps> = ({
   task,
   onToggle,
   onDelete,
@@ -19,10 +19,14 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
   const [swipeState, setSwipeState] = useState<'none' | 'delete' | 'priority-up' | 'priority-down'>('none');
+  const [isPressed, setIsPressed] = useState(false);
   const taskRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const priorityClass = `priority-${task.priority}`;
   const completedClass = task.completed ? 'completed' : '';
+
+  // Minimum distance for swipe detection
   const minSwipeDistance = 50;
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -30,7 +34,15 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     setTouchStart({ x: touch.clientX, y: touch.clientY });
     setTouchEnd(null);
     setSwipeState('none');
-    e.preventDefault();
+    setIsPressed(true);
+
+    // Start long press timer for priority change
+    longPressTimer.current = setTimeout(() => {
+      // Vibrate if available for haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, 500);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -42,14 +54,20 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     const deltaX = touch.clientX - touchStart.x;
     const deltaY = touch.clientY - touchStart.y;
 
+    // Clear long press timer if user moves
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+
     // Determine swipe direction
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe - delete
+      // Horizontal swipe
       if (Math.abs(deltaX) > minSwipeDistance) {
-        setSwipeState('delete');
+        setSwipeState(deltaX > 0 ? 'delete' : 'delete');
       }
     } else {
-      // Vertical swipe - priority change
+      // Vertical swipe
       if (Math.abs(deltaY) > minSwipeDistance) {
         setSwipeState(deltaY < 0 ? 'priority-up' : 'priority-down');
       }
@@ -57,6 +75,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   };
 
   const handleTouchEnd = () => {
+    setIsPressed(false);
+    
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+
     if (!touchStart || !touchEnd) {
       // Simple tap - toggle completion
       onToggle(task.id);
@@ -83,7 +108,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         }
       } else {
         // Swipe down - decrease priority
-        const newPriority = Math.max(0, task.priority - 1) as Priority;
+        const newPriority = Math.max(1, task.priority - 1) as Priority;
         if (newPriority !== task.priority) {
           onPriorityChange(task.id, newPriority);
         }
@@ -98,41 +123,44 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     setSwipeState('none');
   };
 
-  const handleClick = () => {
-    // For non-touch devices (desktop)
-    onToggle(task.id);
-  };
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
 
   return (
     <div
       ref={taskRef}
-      className={`task-item ${priorityClass} ${completedClass} ${className} ${swipeState !== 'none' ? `swipe-${swipeState}` : ''}`}
+      className={`task-item-mobile ${priorityClass} ${completedClass} ${className} ${isPressed ? 'pressed' : ''} ${swipeState !== 'none' ? `swipe-${swipeState}` : ''}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      onClick={handleClick}
       role="button"
       tabIndex={0}
       aria-label={`Task: ${task.title}. Priority ${task.priority}. ${task.completed ? 'Completed' : 'Active'}. Tap to toggle, swipe right to delete, swipe up/down to change priority.`}
     >
-      <div className="task-content">
-        <span className="priority-indicator" title={`Priority ${task.priority}`}>
-          {PRIORITY_LABELS[task.priority] || 'Backlog'}
-        </span>
+      <div className="task-content-mobile">
+        <div className="priority-indicator-mobile" title={`Priority ${task.priority}`}>
+          {PRIORITY_LABELS[task.priority]}
+        </div>
         
-        <div className="task-main">
-          <span className="task-status">
-            {task.completed ? '✓' : '○'}
-          </span>
-          
-          <span className={`task-title ${task.completed ? 'strikethrough' : ''}`}>
+        <div className="task-main-mobile">
+          <span className={`task-title-mobile ${task.completed ? 'strikethrough' : ''}`}>
             {task.title}
           </span>
         </div>
+
+        <div className="task-status-mobile">
+          {task.completed ? '✓' : '○'}
+        </div>
       </div>
 
-      <div className="task-meta">
-        <small className="task-date">
+      <div className="task-meta-mobile">
+        <small className="task-date-mobile">
           {task.completed ? 'Completed' : 'Created'}: {' '}
           {(task.completed ? task.updatedAt : task.createdAt).toLocaleDateString()}
         </small>
@@ -140,16 +168,16 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
       {/* Swipe hints */}
       {swipeState === 'delete' && (
-        <div className="swipe-hint delete-hint">🗑️ Release to delete</div>
+        <div className="swipe-hint delete-hint">Release to delete</div>
       )}
       {swipeState === 'priority-up' && (
-        <div className="swipe-hint priority-hint">↑ Release to increase priority</div>
+        <div className="swipe-hint priority-hint">Release to increase priority</div>
       )}
       {swipeState === 'priority-down' && (
-        <div className="swipe-hint priority-hint">↓ Release to decrease priority</div>
+        <div className="swipe-hint priority-hint">Release to decrease priority</div>
       )}
     </div>
   );
 };
 
-export default TaskItem;
+export default TaskItemMobile;

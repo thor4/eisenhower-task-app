@@ -93,6 +93,10 @@ export const useTasks = () => {
     dispatch({ type: 'UPDATE_TASK', payload: { id, updates } });
   }, []);
 
+  const changePriority = useCallback((id: string, priority: Priority) => {
+    dispatch({ type: 'UPDATE_TASK', payload: { id, updates: { priority } } });
+  }, []);
+
   const deleteTask = useCallback((id: string) => {
     dispatch({ type: 'DELETE_TASK', payload: id });
   }, []);
@@ -130,6 +134,7 @@ export const useTasks = () => {
     updateTask,
     deleteTask,
     toggleTask,
+    changePriority,
     setFilter,
     setSortBy,
     clearCompleted,

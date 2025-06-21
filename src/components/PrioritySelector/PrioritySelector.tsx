@@ -24,9 +24,9 @@ export const PrioritySelector: React.FC<PrioritySelectorProps> = ({
         className="priority-select"
         title={PRIORITY_DESCRIPTIONS[value]}
       >
-        {([4, 3, 2, 1] as Priority[]).map((priority) => (
+        {([3, 2, 1, 0] as Priority[]).map((priority) => (
           <option key={priority} value={priority}>
-            {PRIORITY_LABELS[priority]} - {PRIORITY_DESCRIPTIONS[priority]}
+            {PRIORITY_LABELS[priority] ? `${PRIORITY_LABELS[priority]} - ` : ''}{PRIORITY_DESCRIPTIONS[priority]}
           </option>
         ))}
       </select>

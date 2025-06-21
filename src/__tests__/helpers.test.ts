@@ -135,7 +135,7 @@ describe('Helpers', () => {
 
     it('should return error for invalid priority', () => {
       const error = validateTask('Valid title', 5 as Priority);
-      expect(error).toBe('Priority must be between 1 and 4');
+      expect(error).toBe('Priority must be between 0 and 3');
     });
   });
 });
